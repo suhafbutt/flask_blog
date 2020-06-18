@@ -12,8 +12,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route('/index')
 def index():
 	page_num = request.args.get('page', 1, type=int)
-	# posts = Post.query.all()
-	posts = Post.query.order_by(Post.date_posted.desc()).paginate(per_page=2, page=page_num)
+	posts = Post.query.order_by(Post.date_posted.desc()).paginate(per_page=5, page=page_num)
 	return render_template('index.html', posts= posts)
 
 
@@ -146,3 +145,12 @@ def delete_post(post_id):
 	db.session.commit()
 	flash(f"Your post has been deleted!", 'success')
 	return redirect(url_for('index'))
+
+@app.route('/user/<string:username>')
+def user_posts(username):
+	user = User.query.filter_by(username=username).first_or_404()
+	page_num = request.args.get('page', 1, type=int)
+	posts = Post.query.filter_by(author=user)\
+						.order_by(Post.date_posted.desc())\
+						.paginate(per_page=5, page=page_num)
+	return render_template('user_posts.html', posts= posts, user=user)
